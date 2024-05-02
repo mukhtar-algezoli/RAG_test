@@ -79,28 +79,31 @@ def CommandR_insert_citations_in_order(text, citations, documents):
     modified_citations = []
 
     # Process citations, assigning numbers based on unique document_ids
-    for citation in citations:
-        citation_numbers = []
-        for document_id in sorted(citation["document_ids"]):
-            if document_id not in document_id_to_number:
-                citation_number += 1  # Increment for a new document_id
-                document_id_to_number[document_id] = citation_number
-            citation_numbers.append(document_id_to_number[document_id])
+    if citations:
+      for citation in citations:
+          citation_numbers = []
+          for document_id in sorted(citation["document_ids"]):
+              if document_id not in document_id_to_number:
+                  citation_number += 1  # Increment for a new document_id
+                  document_id_to_number[document_id] = citation_number
+              citation_numbers.append(document_id_to_number[document_id])
 
-        # Adjust start/end with offset
-        start, end = citation['start'] + offset, citation['end'] + offset
-        placeholder = ''.join([f':blue[[{number}]]' for number in citation_numbers])
-        # Bold the cited text and append the placeholder
-        modification = f'**{text[start:end]}**{placeholder}'
-        # Replace the cited text with its bolded version + placeholder
-        text = text[:start] + modification + text[end:]
-        # Update the offset for subsequent replacements
-        offset += len(modification) - (end - start)
+          # Adjust start/end with offset
+          start, end = citation['start'] + offset, citation['end'] + offset
+          placeholder = ''.join([f':blue[[{number}]]' for number in citation_numbers])
+          # Bold the cited text and append the placeholder
+          modification = f'**{text[start:end]}**{placeholder}'
+          # Replace the cited text with its bolded version + placeholder
+          text = text[:start] + modification + text[end:]
+          # Update the offset for subsequent replacements
+          offset += len(modification) - (end - start)
 
-    # Prepare citations for listing at the bottom, ensuring unique document_ids are listed once
-    unique_citations = {number: doc_id for doc_id, number in document_id_to_number.items()}
-    citation_list = '\n'.join([f':blue[[{doc_id}]] source: "{documents[doc_id - 1]["snippet"]}" \n\n' for doc_id, number in sorted(unique_citations.items(), key=lambda item: item[1])])
-    text_with_citations = f'{text} \n\n ------------------------------ Sources ------------------------------ \n\n {citation_list}'
+      # Prepare citations for listing at the bottom, ensuring unique document_ids are listed once
+      unique_citations = {number: doc_id for doc_id, number in document_id_to_number.items()}
+      citation_list = '\n'.join([f':blue[[{doc_id}]] source: "{documents[doc_id - 1]["snippet"]}" \n\n' for doc_id, number in sorted(unique_citations.items(), key=lambda item: item[1])])
+      text_with_citations = f'{text} \n\n ------------------------------ Sources ------------------------------ \n\n {citation_list}'
+    else:
+       text_with_citations = text
 
     return text_with_citations  
 
@@ -118,7 +121,7 @@ def chatbot(pdf_text):
 
         response = CommandR_insert_citations_in_order(output.text, output.citations, documents)
         st.write(response)
-        
+
         try:
             # response = output[0]["generated_text"]
             response = CommandR_insert_citations_in_order(output.text, output.citations, documents)
