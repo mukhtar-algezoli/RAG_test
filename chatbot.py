@@ -115,12 +115,6 @@ def chatbot(pdf_text):
       with st.spinner("Thinking..."):
         model = CommandR(st.secrets["COHERE_API_KEY"])
         output, documents = model.query(pdf_text=pdf_text, query=message)
-
-        # delete
-        response = CommandR_insert_citations_in_order(output.text, output.citations, documents)
-        st.write(response)
-
-        
         try:
             # response = output[0]["generated_text"]
             response = CommandR_insert_citations_in_order(output.text, output.citations, documents)
