@@ -1,5 +1,5 @@
 langchain
 clarifai
 pdfplumber
-cohere
+cohere<5
 numpy
