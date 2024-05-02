@@ -10,7 +10,6 @@ from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory, ChatMessageHistory
 from langchain.schema import HumanMessage, AIMessage
 import streamlit.components.v1 as components
-from pypdf import PdfReader 
 from io import StringIO
 import pdfplumber
 from CommandR import CommandR
