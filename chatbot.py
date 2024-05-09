@@ -140,7 +140,7 @@ def chatbot(pdf_text):
 
 
 def chat():
-    RAG_models_list = ["Cohere Embed + Command R"]
+    RAG_models_list = ["Model Embed"]
     uploaded_file = st.file_uploader("Choose a file", type="pdf")
 
 
@@ -154,7 +154,7 @@ def chat():
             RAG_model = st.selectbox(
                 'Select a Model',
                 options=RAG_models_list,
-                index=(RAG_models_list.index(st.session_state['RAG_model']) if 'Cohere Embed + Command R' in st.session_state else 0)
+                index=(RAG_models_list.index(st.session_state['RAG_model']) if 'Model Embed' in st.session_state else 0)
             )
 
             
