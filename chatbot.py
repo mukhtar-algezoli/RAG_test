@@ -1,13 +1,6 @@
 import streamlit as st
 # from prompts import instructions_data
-from clarifai.modules.css import ClarifaiStreamlitCSS
-from langchain.llms import OpenAI
-from langchain.agents import AgentType, initialize_agent, load_tools
-from langchain.callbacks import StreamlitCallbackHandler
-from langchain.llms import Clarifai
 from langchain.prompts import PromptTemplate
-from langchain.chains import ConversationChain
-from langchain.memory import ConversationBufferMemory, ChatMessageHistory
 from langchain.schema import HumanMessage, AIMessage
 import streamlit.components.v1 as components
 from io import StringIO
