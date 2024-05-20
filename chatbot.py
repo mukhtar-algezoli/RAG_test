@@ -12,7 +12,8 @@ from langchain.schema import HumanMessage, AIMessage
 import streamlit.components.v1 as components
 from io import StringIO
 import pdfplumber
-from CommandR import CommandR
+from command_r import CommandR
+from gemini import GeminiFlash
 
 import requests
 
@@ -69,78 +70,39 @@ def show_previous_chats():
 
   # conversation.memory.chat_memory = ChatMessageHistory(messages=chat_list)
 
-def CommandR_insert_citations_in_order(text, citations, documents):
-    """
-    A helper function to pretty print citations.
-    """
-    offset = 0
-    document_id_to_number = {}
-    citation_number = 0
-    modified_citations = []
+Models = {
+   "Model (C)":CommandR(st.secrets["COHERE_API_KEY"], False),
+   "Model (C + Embed)":CommandR(st.secrets["COHERE_API_KEY"], True),
+    "Model (F)":GeminiFlash(st.secrets["GOOGLE_API_KEY"], False),
+   "Model (F + Embed)":GeminiFlash(st.secrets["GOOGLE_API_KEY"], True),
 
-    # Process citations, assigning numbers based on unique document_ids
-    if citations:
-      for citation in citations:
-          citation_numbers = []
-          for document_id in sorted(citation["document_ids"]):
-              if document_id not in document_id_to_number:
-                  citation_number += 1  # Increment for a new document_id
-                  document_id_to_number[document_id] = citation_number
-              citation_numbers.append(document_id_to_number[document_id])
-
-          # Adjust start/end with offset
-          start, end = citation['start'] + offset, citation['end'] + offset
-          placeholder = ''.join([f':blue[[{number}]]' for number in citation_numbers])
-          # Bold the cited text and append the placeholder
-          modification = f'**{text[start:end]}**{placeholder}'
-          # Replace the cited text with its bolded version + placeholder
-          text = text[:start] + modification + text[end:]
-          # Update the offset for subsequent replacements
-          offset += len(modification) - (end - start)
-
-      # Prepare citations for listing at the bottom, ensuring unique document_ids are listed once
-      unique_citations = {number: doc_id for doc_id, number in document_id_to_number.items()}
-      citation_list = '\n'.join([f':blue[[{doc_id}]] source: "{documents[doc_id - 1]["snippet"]}" \n\n' for doc_id, number in sorted(unique_citations.items(), key=lambda item: item[1])])
-      text_with_citations = f'{text} \n\n ------------------------------ Sources ------------------------------ \n\n {citation_list}'
-    else:
-       text_with_citations = text
-
-    return text_with_citations  
+}
 
 
 
-
-def chatbot(pdf_text):
+def chatbot(pdf_text, RAG_model):
   if message := st.chat_input(key="input"):
     st.chat_message("user").write(message)
     st.session_state['chat_history'].append({"role": "user", "content": message})
     with st.chat_message("assistant"):
       with st.spinner("Thinking..."):
-        model = CommandR(st.secrets["COHERE_API_KEY"])
-        output, documents = model.query(pdf_text=pdf_text, query=message)
-
+        model = Models[RAG_model]
+        parsed_text = model.query(pdf_text=pdf_text, query=message)
         try:
             # response = output[0]["generated_text"]
-            response = CommandR_insert_citations_in_order(output.text, output.citations, documents)
-            st.write(response)
+            parsed_text = model.query(pdf_text=pdf_text, query=message)
+            st.write(parsed_text)
         except:
-            response = "Server is starting...please try again in one minute"
-            st.write(response)
+            parsed_text = "Server is starting...please try again in one minute"
+            st.write(parsed_text)
 
-        # print(output)
-        # response = output[0]["generated_text"]
-        # st.code(response, line_numbers=True)
-
-        # st.write(response)
-        # st.write(f":blue[{response}]")
-        # st.write("This is :blue[test]")
-        message = {"role": "assistant", "content": response}
+        message = {"role": "assistant", "content": parsed_text}
         st.session_state['chat_history'].append(message)
     st.write("\n***\n")
 
 
 def chat():
-    RAG_models_list = ["Model Embed"]
+    RAG_models_list = ["Model (F)", "Model (F + Embed)", "Model (C)", "Model (C + Embed)"]
     uploaded_file = st.file_uploader("Choose a file", type="pdf")
 
 
@@ -192,7 +154,7 @@ def chat():
 
             if "RAG_model" in st.session_state.keys():
                 show_previous_chats()
-                chatbot(pdf_text)
+                chatbot(pdf_text, RAG_model)
 
             st.markdown(
                 """
