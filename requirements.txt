@@ -6,3 +6,4 @@ google-generativeai
 numpy
 openai
 anthropic
+streamlit-audiorec
