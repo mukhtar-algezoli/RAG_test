@@ -5,7 +5,7 @@ from search_models import SearchModel
 
 
 class CommandR(SearchModel):
-    def __init__(self, API_KEY:str, use_embed:bool) -> None:
+    def __init__(self, API_KEY:str, use_embed:bool, use_audio=False) -> None:
         self.API_KEY = API_KEY
         self.co = cohere.Client(self.API_KEY)
         self.embed_model = "embed-english-v3.0"

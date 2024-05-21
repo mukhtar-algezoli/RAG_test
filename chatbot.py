@@ -10,6 +10,9 @@ from gemini import GeminiFlash
 from gpt import GPT
 from claude import Claude
 
+from st_audiorec import st_audiorec
+
+
 import requests
 
 
@@ -68,9 +71,10 @@ def show_previous_chats():
 Models = {
    "Model (R)":CommandR(st.secrets["COHERE_API_KEY"], False),
    "Model (R + Embed)":CommandR(st.secrets["COHERE_API_KEY"], True),
-    "Model (F)":GeminiFlash(st.secrets["GOOGLE_API_KEY"], False),
+   "Model (F)":GeminiFlash(st.secrets["GOOGLE_API_KEY"], False),
    "Model (F + Embed)":GeminiFlash(st.secrets["GOOGLE_API_KEY"], True),
-    "Model (O)":GPT(st.secrets["OPENAI_API_KEY"], False),
+   "Model (F Audio)":GeminiFlash(st.secrets["GOOGLE_API_KEY"], False, use_audio=True),
+   "Model (O)":GPT(st.secrets["OPENAI_API_KEY"], False),
    "Model (O + Embed)":GPT(st.secrets["OPENAI_API_KEY"], True),
    "Model (C)": Claude(st.secrets["ANTHROPIC_API_KEY"], False),
 
@@ -79,28 +83,48 @@ Models = {
 
 
 def chatbot(pdf_text, RAG_model):
-  if message := st.chat_input(key="input"):
-    st.chat_message("user").write(message)
-    st.session_state['chat_history'].append({"role": "user", "content": message})
-    with st.chat_message("assistant"):
-      with st.spinner("Thinking..."):
-        model = Models[RAG_model]
-        parsed_text = model.query(pdf_text=pdf_text, query=message)
-        try:
-            # response = output[0]["generated_text"]
-            parsed_text = model.query(pdf_text=pdf_text, query=message)
-            st.write(parsed_text)
-        except:
-            parsed_text = "Server is starting...please try again in one minute"
-            st.write(parsed_text)
-
-        message = {"role": "assistant", "content": parsed_text}
-        st.session_state['chat_history'].append(message)
+  
+  if RAG_model == "Model (F Audio)":
+    # remove 
+    wav_audio_data = st_audiorec()
+    if wav_audio_data is not None:
+        with st.chat_message("assistant"):
+           with st.spinner("Thinking..."):
+                model = Models[RAG_model]
+                parsed_text = model.query_audio(pdf_text, wav_audio_data)
+                st.write(parsed_text)
+                # try:
+                #     parsed_text = model.query(pdf_text=pdf_text, query=message)
+                #     st.write(parsed_text)
+                # except:
+                #     parsed_text = "Server is starting...please try again in one minute"
+                #     st.write(parsed_text)
+        # st.audio(wav_audio_data, format='audio/wav')
     st.write("\n***\n")
+    # remove
+  else:
+    if message := st.chat_input(key="input"):
+        st.chat_message("user").write(message)
+        st.session_state['chat_history'].append({"role": "user", "content": message})
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                model = Models[RAG_model]
+                parsed_text = model.query(pdf_text=pdf_text, query=message)
+                try:
+                    # response = output[0]["generated_text"]
+                    parsed_text = model.query(pdf_text=pdf_text, query=message)
+                    st.write(parsed_text)
+                except:
+                    parsed_text = "Server is starting...please try again in one minute"
+                    st.write(parsed_text)
+
+            message = {"role": "assistant", "content": parsed_text}
+            st.session_state['chat_history'].append(message)
+        st.write("\n***\n")
 
 
 def chat():
-    RAG_models_list = ["Model (F)", "Model (F + Embed)", "Model (O)", "Model (O + Embed)", "Model (C)",  "Model (R)", "Model (R + Embed)"]
+    RAG_models_list = ["Model (F)", "Model (F + Embed)", "Model (O)", "Model (O + Embed)", "Model (C)",  "Model (R)", "Model (R + Embed)", "Model (F Audio)"]
     uploaded_file = st.file_uploader("Choose a file", type="pdf")
 
 
@@ -153,6 +177,7 @@ def chat():
             if "RAG_model" in st.session_state.keys():
                 show_previous_chats()
                 chatbot(pdf_text, RAG_model)
+            
 
             st.markdown(
                 """

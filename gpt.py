@@ -6,7 +6,7 @@ from search_models import SearchModel
 
 
 class GPT(SearchModel):
-    def __init__(self, API_KEY:str, use_embed:bool) -> None:
+    def __init__(self, API_KEY:str, use_embed:bool, use_audio=False) -> None:
         self.API_KEY = API_KEY
         self.client = OpenAI(api_key= API_KEY)
         self.embed_model = "text-embedding-3-large"

@@ -3,17 +3,19 @@ import google.generativeai as genai
 import google.ai.generativelanguage as glm
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import numpy as np
+import random
 from search_models import SearchModel
 
 
 class GeminiFlash(SearchModel):
-    def __init__(self, API_KEY:str, use_embed:bool) -> None:
+    def __init__(self, API_KEY:str, use_embed:bool, use_audio=False) -> None:
         self.API_KEY = API_KEY
         self.genai = genai
         self.genai.configure(api_key= API_KEY)
         self.embed_model = "models/embedding-001"
         self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
         self.use_embed = use_embed
+        self.use_audio = use_audio
     
     
     def embed_doc(self, chunks:list):
@@ -33,6 +35,30 @@ class GeminiFlash(SearchModel):
         query_embedding = response["embedding"]
         return {"query_text": query, "query_embed":query_embedding}
     
+
+    def query_audio(self, pdf_text:str, audio):
+        if self.use_audio:
+            print("search With Audio!")
+            rand_num = random.randint(0, 10000)
+            with open(f"audio_file{str(rand_num)}.wav", "wb") as file:
+                file.write(audio)
+            print(f"Audio path: audio_file{str(rand_num)}.wav")
+            pdf_text = pdf_text.replace("'", "").replace('"', "").replace("\n", " ")
+            prompt = textwrap.dedent("""You are a helpful and informative bot that answers questions (that the user asks in audio) and you use text from the reference passage included below. \
+                Be sure to respond in a complete sentence, being comprehensive, including all relevant background information. \
+                However, you are talking to a non-technical audience, so be sure to break down complicated concepts and \
+                strike a friendly and converstional tone. \
+                If the passage is irrelevant to the answer, you may ignore it.\
+                Answer the question in the audio file:
+                PASSAGE: '{relevant_passage}'
+
+                    ANSWER:
+                """).format(relevant_passage=pdf_text)
+            audio_file = genai.upload_file(f"audio_file{str(rand_num)}.wav", mime_type="audio/wav")
+            response = self.model.generate_content([prompt, audio_file],
+                                  request_options={"timeout": 600})
+            
+            return response.text
 
     def query(self, pdf_text:str, query:str):
         if self.use_embed:
