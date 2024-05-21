@@ -4,3 +4,5 @@ pdfplumber
 cohere<5
 google-generativeai
 numpy
+openai
+anthropic

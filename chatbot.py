@@ -7,6 +7,8 @@ from io import StringIO
 import pdfplumber
 from command_r import CommandR
 from gemini import GeminiFlash
+from gpt import GPT
+from claude import Claude
 
 import requests
 
@@ -64,10 +66,13 @@ def show_previous_chats():
   # conversation.memory.chat_memory = ChatMessageHistory(messages=chat_list)
 
 Models = {
-   "Model (C)":CommandR(st.secrets["COHERE_API_KEY"], False),
-   "Model (C + Embed)":CommandR(st.secrets["COHERE_API_KEY"], True),
+   "Model (R)":CommandR(st.secrets["COHERE_API_KEY"], False),
+   "Model (R + Embed)":CommandR(st.secrets["COHERE_API_KEY"], True),
     "Model (F)":GeminiFlash(st.secrets["GOOGLE_API_KEY"], False),
    "Model (F + Embed)":GeminiFlash(st.secrets["GOOGLE_API_KEY"], True),
+    "Model (O)":GPT(st.secrets["OPENAI_API_KEY"], False),
+   "Model (O + Embed)":GPT(st.secrets["OPENAI_API_KEY"], True),
+   "Model (C)": Claude(st.secrets["ANTHROPIC_API_KEY"], False),
 
 }
 
@@ -95,7 +100,7 @@ def chatbot(pdf_text, RAG_model):
 
 
 def chat():
-    RAG_models_list = ["Model (F)", "Model (F + Embed)", "Model (C)", "Model (C + Embed)"]
+    RAG_models_list = ["Model (F)", "Model (F + Embed)", "Model (O)", "Model (O + Embed)", "Model (C)",  "Model (R)", "Model (R + Embed)"]
     uploaded_file = st.file_uploader("Choose a file", type="pdf")
 
 
