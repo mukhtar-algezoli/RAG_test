@@ -14,4 +14,5 @@ WORKDIR /app
 COPY . /app
 
 # Run
-ENTRYPOINT [“streamlit”, “run”, “chatbot.py”, “–server.port=8080”, “–server.address=0.0.0.0”]
+# ENTRYPOINT [“streamlit”, “run”, “chatbot.py”, “–server.port=8080”, “–server.address=0.0.0.0”]
+CMD ["streamlit", "run", "chatbot.py", "--server.enableCORS", "false", "--browser.serverAddress", "0.0.0.0", "--browser.gatherUsageStats", "false", "--server.port", "8080"]
