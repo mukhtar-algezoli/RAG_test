@@ -9,6 +9,9 @@ from command_r import CommandR
 from gemini import GeminiFlash
 from gpt import GPT
 from claude import Claude
+from dotenv import load_dotenv
+import os
+
 
 from st_audiorec import st_audiorec
 
@@ -16,6 +19,7 @@ from st_audiorec import st_audiorec
 import requests
 
 
+load_dotenv()
 
 # def query(payload): 
 #  API_URL = "https://oa6kdk8gxzmfy79k.us-east-1.aws.endpoints.huggingface.cloud"
@@ -69,14 +73,14 @@ def show_previous_chats():
   # conversation.memory.chat_memory = ChatMessageHistory(messages=chat_list)
 
 Models = {
-   "Model (R)":CommandR(st.secrets["COHERE_API_KEY"], False),
-   "Model (R + Embed)":CommandR(st.secrets["COHERE_API_KEY"], True),
-   "Model (F)":GeminiFlash(st.secrets["GOOGLE_API_KEY"], False),
-   "Model (F + Embed)":GeminiFlash(st.secrets["GOOGLE_API_KEY"], True),
-   "Model (F Audio)":GeminiFlash(st.secrets["GOOGLE_API_KEY"], False, use_audio=True),
-   "Model (O)":GPT(st.secrets["OPENAI_API_KEY"], False),
-   "Model (O + Embed)":GPT(st.secrets["OPENAI_API_KEY"], True),
-   "Model (C)": Claude(st.secrets["ANTHROPIC_API_KEY"], False),
+   "Model (R)":CommandR(os.getenv("COHERE_API_KEY"), False),
+   "Model (R + Embed)":CommandR(os.getenv("COHERE_API_KEY"), True),
+   "Model (F)":GeminiFlash(os.getenv("GOOGLE_API_KEY"), False),
+   "Model (F + Embed)":GeminiFlash(os.getenv("GOOGLE_API_KEY"), True),
+   "Model (F Audio)":GeminiFlash(os.getenv("GOOGLE_API_KEY"), False, use_audio=True),
+   "Model (O)":GPT(os.getenv("OPENAI_API_KEY"), False),
+   "Model (O + Embed)":GPT(os.getenv("OPENAI_API_KEY"), True),
+   "Model (C)": Claude(os.getenv("ANTHROPIC_API_KEY"), False),
 
 }
 
